@@ -1,0 +1,6 @@
+# Ignore IntelliJ project files
+/.idea
+/openhab-weekly-program.iml
+
+# Ignore maven build directory
+/target
