@@ -10,7 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class TimeProgramBuilderTest {
     @Test
     public void whenTheDefaultTimeProgramIsCreatedThenTimeProgramContainsOneSwitchCycle() {
-        TimeProgramBuilder builder = new TimeProgramBuilderImplementation();
+        TimeProgramBuilder builder = new TimeProgramBuilder();
 
         final TimeProgram defaultProgram = builder.defaultProgram();
         assertThat(defaultProgram.size(), equalTo(1));
@@ -18,7 +18,7 @@ public class TimeProgramBuilderTest {
 
     @Test
     public void whenTheDefaultTimeProgramIsCreatedThenTimeProgramContainsSwitchCycleToAutomaticAtMidnight() {
-        TimeProgramBuilder builder = new TimeProgramBuilderImplementation();
+        TimeProgramBuilder builder = new TimeProgramBuilder();
         final SwitchCycle switchCycle = new SwitchCycle(LocalTime.parse("00:00"), OperatingMode.Auto);
 
         final TimeProgram defaultProgram = builder.defaultProgram();
@@ -27,7 +27,7 @@ public class TimeProgramBuilderTest {
 
     @Test
     public void whenTheBuilderAddsASwitchCycleToTheTimeProgramThenTheTimeProgramContainsOneSwitchCycle() {
-        TimeProgramBuilder builder = new TimeProgramBuilderImplementation();
+        TimeProgramBuilder builder = new TimeProgramBuilder();
 
         TimeProgram timeProgram = builder
                 .addSwitchCycle(new SwitchCycle(LocalTime.parse("00:00"), OperatingMode.Auto))
@@ -38,7 +38,7 @@ public class TimeProgramBuilderTest {
 
     @Test
     public void whenTheBuilderAddsASwitchCycleToTheTimeProgramThenTheTimeProgramContainsThatSwitchCycle() {
-        TimeProgramBuilder builder = new TimeProgramBuilderImplementation();
+        TimeProgramBuilder builder = new TimeProgramBuilder();
         final SwitchCycle switchCycle = new SwitchCycle(LocalTime.parse("00:00"), OperatingMode.Auto);
 
         TimeProgram timeProgram = builder

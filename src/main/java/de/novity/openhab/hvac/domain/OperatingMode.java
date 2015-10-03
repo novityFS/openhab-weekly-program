@@ -30,7 +30,12 @@ public enum OperatingMode {
     /**
      * The building protection mode. In this mode the HVAC system shuts down but protects the building from freezing.
      */
-    BuildingProtection(0x04);
+    BuildingProtection(0x04),
+
+    /**
+     * A special value indicating an undefined operating mode.
+     */
+    Undefined(0xffff);
 
     private final int value;
 
