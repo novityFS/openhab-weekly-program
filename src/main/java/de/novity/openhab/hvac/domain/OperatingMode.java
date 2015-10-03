@@ -39,7 +39,11 @@ public enum OperatingMode {
 
     private final int value;
 
-    private OperatingMode(final int value) {
+    OperatingMode(final int value) {
         this.value = value;
+    }
+
+    public int getValue() {
+        return value;
     }
 }
