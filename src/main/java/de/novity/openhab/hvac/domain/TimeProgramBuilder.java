@@ -5,27 +5,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TimeProgramBuilder {
-    private final List<SwitchCycle> switchCycles = new ArrayList<SwitchCycle>();
+    private String name;
+    private List<SwitchCycle> cycles = new ArrayList<SwitchCycle>();
 
     public TimeProgram defaultProgram() {
-        List<SwitchCycle> timeProgram = new ArrayList<SwitchCycle>();
-        timeProgram.add(new SwitchCycle(LocalTime.parse("00:00"), OperatingMode.Auto));
+        name = "Default";
+        cycles.add(new SwitchCycle(LocalTime.parse("00:00"), OperatingMode.Auto));
+        return build();
+    }
 
-        TimeProgram defaultProgram = new TimeProgram(timeProgram);
-        return defaultProgram;
+    public TimeProgramBuilder withName(String name) {
+        this.name = name;
+        return this;
     }
 
     public TimeProgramBuilder addSwitchCycle(SwitchCycle switchCycle) {
-        switchCycles.add(switchCycle);
+        cycles.add(switchCycle);
         return this;
     }
 
     public TimeProgramBuilder applyTimeProgram(TimeProgram timeProgram) {
-        switchCycles.addAll(timeProgram);
+        cycles.addAll(timeProgram.getCycles());
         return this;
     }
 
     public TimeProgram build() {
-        return new TimeProgram(switchCycles);
+        TimeProgram timeProgram = new TimeProgram(name);
+        timeProgram.addAll(cycles);
+
+        return timeProgram;
     }
 }

@@ -1,8 +1,5 @@
 package de.novity.openhab.hvac.domain;
 
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.testng.annotations.Test;
 
 import java.time.LocalTime;
@@ -13,25 +10,29 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class HVACRoomControllerTest {
     @Test
-    public void whenNewRoomControllerIsCreatedWithNameThenTheRoomControllerHasThatName() {
-        TimeProgramBuilder builder = new TimeProgramBuilder();
-
+    public void whenNewRoomControllerIsCreatedWithNameAndItemNameThenTheRoomControllerHasThatNameAndItemName() {
         final String roomControllerName = "A";
-        final TimeProgram timeProgram = builder.defaultProgram();
-
-        HVACRoomController roomController = new HVACRoomController(roomControllerName, timeProgram);
-
+        final String itemName = "Item";
+        HVACRoomController roomController = new HVACRoomController(roomControllerName, itemName);
         assertThat(roomController.getName(), equalTo(roomControllerName));
+        assertThat(roomController.getItemName(), equalTo(itemName));
     }
 
     @Test
     public void whenNewRoomControllerIsCreatedThenTheOperatingModeIsUndefined() {
-        TimeProgramBuilder builder = new TimeProgramBuilder();
-
         final String roomControllerName = "A";
-        final TimeProgram timeProgram = builder.defaultProgram();
+        final String itemName = "Item";
+        HVACRoomController roomController = new HVACRoomController(roomControllerName, itemName);
+        assertThat(roomController.getActiveOperatingMode(), equalTo(OperatingMode.Undefined));
+    }
 
-        HVACRoomController roomController = new HVACRoomController(roomControllerName, timeProgram);
+    @Test
+    public void whenRoomControllerIsCreatedWithMissingTimeProgramAndOperatingModeIsUpdatedThenTheOperatingModeIsStillUndefined() {
+        final String roomControllerName = "A";
+        final String itemName = "Item";
+
+        HVACRoomController roomController = new HVACRoomController(roomControllerName, itemName);
+        roomController.updateOperatingMode(LocalTime.parse("07:00"));
 
         assertThat(roomController.getActiveOperatingMode(), equalTo(OperatingMode.Undefined));
     }
@@ -41,9 +42,11 @@ public class HVACRoomControllerTest {
         TimeProgramBuilder builder = new TimeProgramBuilder();
 
         final String roomControllerName = "A";
+        final String itemName = "Item";
         final TimeProgram timeProgram = builder.defaultProgram();
 
-        HVACRoomController roomController = new HVACRoomController(roomControllerName, timeProgram);
+        HVACRoomController roomController = new HVACRoomController(roomControllerName, itemName);
+        roomController.applyTimeProgram(timeProgram);
         roomController.updateOperatingMode(LocalTime.parse("07:00"));
 
         assertThat(roomController.getActiveOperatingMode(), not(equalTo(OperatingMode.Undefined)));

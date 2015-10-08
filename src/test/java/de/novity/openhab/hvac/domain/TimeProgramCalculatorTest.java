@@ -21,6 +21,7 @@ public class TimeProgramCalculatorTest {
         final OperatingMode expectedOperatingMode = OperatingMode.Standby;
 
         TimeProgram timeProgram = new TimeProgramBuilder()
+                .withName("Default")
                 .addSwitchCycle(new SwitchCycle(LocalTime.parse("08:30"), OperatingMode.Comfort))
                 .build();
 
@@ -38,6 +39,7 @@ public class TimeProgramCalculatorTest {
         final OperatingMode expectedOperatingMode = OperatingMode.Comfort;
 
         TimeProgram timeProgram = new TimeProgramBuilder()
+                .withName("Default")
                 .addSwitchCycle(new SwitchCycle(LocalTime.parse("08:30"), expectedOperatingMode))
                 .build();
 
@@ -55,6 +57,7 @@ public class TimeProgramCalculatorTest {
         final OperatingMode expectedOperatingMode = OperatingMode.Comfort;
 
         TimeProgram timeProgram = new TimeProgramBuilder()
+                .withName("Default")
                 .addSwitchCycle(new SwitchCycle(LocalTime.parse("08:30"), expectedOperatingMode))
                 .addSwitchCycle(new SwitchCycle(LocalTime.parse("09:30"), OperatingMode.Auto))
                 .build();
@@ -73,6 +76,7 @@ public class TimeProgramCalculatorTest {
         final OperatingMode expectedOperatingMode = OperatingMode.Auto;
 
         TimeProgram timeProgram = new TimeProgramBuilder()
+                .withName("Default")
                 .addSwitchCycle(new SwitchCycle(LocalTime.parse("08:30"), expectedOperatingMode))
                 .build();
 

@@ -1,25 +1,37 @@
 package de.novity.openhab.hvac.domain;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.LocalTime;
 
 public class HVACRoomController {
+    private static final Logger logger = LoggerFactory.getLogger(HVACRoomController.class);
+
     private final String name;
+    private final String itemName;
     private final TimeProgramCalculator calculator;
 
     private TimeProgram timeProgram;
 
     private OperatingMode activeOperatingMode;
 
-    public HVACRoomController(String assignedName, TimeProgram assignedTimeProgram) {
-        if ((assignedName == null) || (assignedName.isEmpty())) {
-            throw new IllegalArgumentException("Name must not be null or empty");
+    public HVACRoomController(String name, String itemName) {
+        if ((name == null) || (name.isEmpty())) {
+            throw new IllegalArgumentException("The name of this room controller must not be null or empty");
         }
 
-        this.name = assignedName;
+        if ((name == null) || (name.isEmpty())) {
+            throw new IllegalArgumentException("The item name must not be null or empty");
+        }
+
+        this.name = name;
+        this.itemName = itemName;
+        this.timeProgram = null;
         this.activeOperatingMode = OperatingMode.Undefined;
         this.calculator = new TimeProgramCalculator();
 
-        applyTimeProgram(assignedTimeProgram);
+        logger.info("Room controller '{}' created", name);
     }
 
     public void applyTimeProgram(TimeProgram timeProgram) {
@@ -28,10 +40,15 @@ public class HVACRoomController {
         }
 
         this.timeProgram = timeProgram;
+        logger.info("Time program '{}' to room controller '{}' applied", timeProgram.getId(), name);
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getItemName() {
+        return itemName;
     }
 
     public TimeProgram getTimeProgram() {
@@ -47,18 +64,20 @@ public class HVACRoomController {
             throw new NullPointerException("Point in time must not be null");
         }
 
-        OperatingMode nextOperatingMode = calculator.determineOperationgModeByTime(
-                timeOfUpdate,
-                timeProgram,
-                activeOperatingMode);
+        if (timeProgram != null) {
+            OperatingMode nextOperatingMode = calculator.determineOperationgModeByTime(
+                    timeOfUpdate,
+                    timeProgram,
+                    activeOperatingMode);
 
-        publishOperatingMode(nextOperatingMode);
+            publishOperatingMode(nextOperatingMode);
+        }
     }
 
     private void publishOperatingMode(OperatingMode newOperatingMode) {
+        logger.trace("Checking operating mode on room controller '{}'", name);
         if (!newOperatingMode.equals(activeOperatingMode)) {
-            System.out.println("Changing operating mode from " + activeOperatingMode + " to " + newOperatingMode);
-
+            logger.info("Operating mode changed from {} to {} on room controller '{}'", activeOperatingMode, newOperatingMode, name);
             activeOperatingMode = newOperatingMode;
         }
     }

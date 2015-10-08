@@ -25,11 +25,25 @@ public class TimeProgramBuilderTest {
         assertThat(defaultProgram.contains(switchCycle), equalTo(true));
     }
 
+    @Test(
+            expectedExceptions = IllegalArgumentException.class
+    )
+    public void whenTheBuilderIsUsedWithoutANameThenAnExceptionIsThrown() {
+        TimeProgramBuilder builder = new TimeProgramBuilder();
+
+        TimeProgram timeProgram = builder
+                .addSwitchCycle(new SwitchCycle(LocalTime.parse("00:00"), OperatingMode.Auto))
+                .build();
+
+        assertThat(timeProgram.size(), equalTo(1));
+    }
+
     @Test
     public void whenTheBuilderAddsASwitchCycleToTheTimeProgramThenTheTimeProgramContainsOneSwitchCycle() {
         TimeProgramBuilder builder = new TimeProgramBuilder();
 
         TimeProgram timeProgram = builder
+                .withName("Default")
                 .addSwitchCycle(new SwitchCycle(LocalTime.parse("00:00"), OperatingMode.Auto))
                 .build();
 
@@ -42,6 +56,7 @@ public class TimeProgramBuilderTest {
         final SwitchCycle switchCycle = new SwitchCycle(LocalTime.parse("00:00"), OperatingMode.Auto);
 
         TimeProgram timeProgram = builder
+                .withName("Default")
                 .addSwitchCycle(new SwitchCycle(LocalTime.parse("00:00"), OperatingMode.Auto))
                 .build();
 

@@ -46,4 +46,14 @@ public enum OperatingMode {
     public int getValue() {
         return value;
     }
+
+    public static OperatingMode findByValue(int value) {
+        for (OperatingMode mode : OperatingMode.values()) {
+            if (mode.getValue() == value) {
+                return mode;
+            }
+        }
+
+        throw new IllegalArgumentException("The value " + value + " is not a valid operating mode");
+    }
 }

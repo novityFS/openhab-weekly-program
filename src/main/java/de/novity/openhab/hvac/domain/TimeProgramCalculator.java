@@ -12,7 +12,7 @@ public class TimeProgramCalculator {
 
         SwitchCycle activeSwitchCycle = timeProgram.getEarliestSwitchCycle();
 
-        for (SwitchCycle cycle : timeProgram) {
+        for (SwitchCycle cycle : timeProgram.getCycles()) {
             LocalTime timeToCompare = cycle.getPointInTime();
 
             if (timeOfCheck.isAfter(timeToCompare) || timeOfCheck.equals(timeToCompare)) {

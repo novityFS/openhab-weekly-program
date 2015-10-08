@@ -57,4 +57,9 @@ public class SwitchCycle implements Comparable<SwitchCycle> {
         result = 31 * result + operatingMode.hashCode();
         return result;
     }
+
+    @Override
+    public String toString() {
+        return pointInTime + ", " + operatingMode;
+    }
 }
