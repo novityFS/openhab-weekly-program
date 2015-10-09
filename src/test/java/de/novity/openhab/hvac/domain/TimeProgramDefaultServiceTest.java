@@ -46,7 +46,7 @@ public class TimeProgramDefaultServiceTest {
     }
 
     @Test
-    public void whenASwitchCycleIsAddedToATimeProgramThenTheTimeProgramIsUpdatedInTheRepository() {
+    public void whenASwitchCycleIsAddedToATimeProgramThenTheTimeProgramHasThatSwitchCycle() {
         TimeProgramService service = new TimeProgramDefaultService(repository);
         final String id = "My first program";
         final TimeProgram timeProgram = new TimeProgram(id);
@@ -55,7 +55,6 @@ public class TimeProgramDefaultServiceTest {
 
         new StrictExpectations() {{
                 repository.findById(id); result = timeProgram;
-                repository.updateTimeProgram(timeProgram);
             }
         };
 

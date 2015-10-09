@@ -31,7 +31,5 @@ public class TimeProgramDefaultService implements TimeProgramService {
         SwitchCycle cycle = SwitchCycleMapper.mapFromData(cycleData);
         TimeProgram timeProgram = repository.findById(id);
         timeProgram.add(cycle);
-        repository.updateTimeProgram(timeProgram);
-        logger.info("Time program '{}' saved to repository", id);
     }
 }

@@ -1,5 +1,6 @@
 package de.novity.openhab.hvac.domain;
 
+import de.novity.openhab.hvac.api.OperatingModeChangedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,7 +9,8 @@ import java.time.LocalTime;
 public class HVACRoomController {
     private static final Logger logger = LoggerFactory.getLogger(HVACRoomController.class);
 
-    private final String name;
+    private final OperatingModeChangedListener listener;
+
     private final String itemName;
     private final TimeProgramCalculator calculator;
 
@@ -16,22 +18,22 @@ public class HVACRoomController {
 
     private OperatingMode activeOperatingMode;
 
-    public HVACRoomController(String name, String itemName) {
-        if ((name == null) || (name.isEmpty())) {
-            throw new IllegalArgumentException("The name of this room controller must not be null or empty");
-        }
-
-        if ((name == null) || (name.isEmpty())) {
+    public HVACRoomController(String itemName, OperatingModeChangedListener listener) {
+        if ((itemName == null) || (itemName.isEmpty())) {
             throw new IllegalArgumentException("The item name must not be null or empty");
         }
 
-        this.name = name;
+        if (listener == null) {
+            throw new NullPointerException("Listener must not be null");
+        }
+
+        this.listener = listener;
         this.itemName = itemName;
         this.timeProgram = null;
         this.activeOperatingMode = OperatingMode.Undefined;
         this.calculator = new TimeProgramCalculator();
 
-        logger.info("Room controller '{}' created", name);
+        logger.info("Room controller for item name '{}' created", itemName);
     }
 
     public void applyTimeProgram(TimeProgram timeProgram) {
@@ -40,11 +42,7 @@ public class HVACRoomController {
         }
 
         this.timeProgram = timeProgram;
-        logger.info("Time program '{}' to room controller '{}' applied", timeProgram.getId(), name);
-    }
-
-    public String getName() {
-        return name;
+        logger.info("Time program '{}' for item name '{}' applied", timeProgram.getId(), itemName);
     }
 
     public String getItemName() {
@@ -75,10 +73,12 @@ public class HVACRoomController {
     }
 
     private void publishOperatingMode(OperatingMode newOperatingMode) {
-        logger.trace("Checking operating mode on room controller '{}'", name);
+        logger.trace("Checking operating mode on item '{}'", itemName);
         if (!newOperatingMode.equals(activeOperatingMode)) {
-            logger.info("Operating mode changed from {} to {} on room controller '{}'", activeOperatingMode, newOperatingMode, name);
+            OperatingMode oldOperatingMode = activeOperatingMode;
             activeOperatingMode = newOperatingMode;
+
+            listener.operatingModeChanged(itemName, oldOperatingMode, newOperatingMode);
         }
     }
 }

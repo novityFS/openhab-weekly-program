@@ -35,55 +35,44 @@ public class RoomControllerDefaultService implements RoomControllerService {
         logger.info("Room controller default service created");
     }
 
-    public void defineRoomController(String name, String itemName) {
-        HVACRoomController roomController = new HVACRoomController(name, itemName);
-        roomControllerRepository.addRoomController(roomController);
-        logger.info("Room controller '{}' for item '{}' saved to repository", name, itemName);
+    public void defineHVACRoomControllerGroup(String roomControllerGroupName) {
+        HVACRoomControllerGroup roomControllerGroup = new HVACRoomControllerGroup(roomControllerGroupName);
+        roomControllerRepository.addRoomControllerGroup(roomControllerGroup);
+        logger.info("Room controller group '{}' saved to repository", roomControllerGroupName);
     }
 
-    public void applyTimeProgram(String roomControllerName, String timeProgramId) {
-        if ((roomControllerName == null) || (roomControllerName.isEmpty())){
-            throw new IllegalArgumentException("Room controller name must not be null or empty");
-        }
+    public void defineRoomController(String roomControllerGroupName, String itemName) {
+        HVACRoomControllerGroup hvacRoomControllerGroup = roomControllerRepository.findByName(roomControllerGroupName);
+        HVACRoomController roomController = new HVACRoomController(itemName, operatingModeChangedListener);
+        hvacRoomControllerGroup.connectHVACRoomController(itemName, roomController);
+        logger.info("Room controller for item '{}' added to room controller group {}", itemName, roomControllerGroupName);
+    }
 
-        if ((timeProgramId == null) || (timeProgramId.isEmpty())){
-            throw new IllegalArgumentException("Time program id must not be null or empty");
-        }
-
-        HVACRoomController roomController = roomControllerRepository.findById(roomControllerName);
+    public void applyTimeProgram(String roomControllerGroupName, String itemName, String timeProgramId) {
+        HVACRoomControllerGroup hvacRoomControllerGroup = roomControllerRepository.findByName(roomControllerGroupName);
+        HVACRoomController roomController = hvacRoomControllerGroup.findByItemName(itemName);
 
         if (roomController == null) {
-            throw new NullPointerException("Room controller for id '" + roomControllerName + "' is unknown");
+            throw new NullPointerException("Room controller for item '" + itemName + "' is unknown");
         }
 
         TimeProgram timeProgram = timeProgramRepository.findById(timeProgramId);
 
         if (timeProgram == null) {
-            throw new NullPointerException("Time program for id '" + roomControllerName + "' is unknown");
+            throw new NullPointerException("Time program for id '" + timeProgramId + "' is unknown");
         }
 
         roomController.applyTimeProgram(timeProgram);
-        roomControllerRepository.updateRoomController(roomController);
-        logger.info("Room controller '{}' saved to repository", roomControllerName);
+        logger.info("Time program '{}' applied to item '{}'", timeProgramId, itemName);
     }
 
-    public void updateOperatingMode(String roomControllerName, LocalTime timeOfUpdate) {
-        if ((roomControllerName == null) || (roomControllerName.isEmpty())){
-            throw new IllegalArgumentException("Room controller id must not be null or empty");
+    public void updateOperatingMode(String roomControllerGroupName, LocalTime timeOfUpdate) {
+        HVACRoomControllerGroup hvacRoomControllerGroup = roomControllerRepository.findByName(roomControllerGroupName);
+
+        if (hvacRoomControllerGroup == null) {
+            throw new NullPointerException("Room controller for id '" + roomControllerGroupName + "' is unknown");
         }
 
-        HVACRoomController roomController = roomControllerRepository.findById(roomControllerName);
-
-        if (roomController == null) {
-            throw new NullPointerException("Room controller for id '" + roomControllerName + "' is unknown");
-        }
-
-        OperatingMode oldMode = roomController.getActiveOperatingMode();
-        roomController.updateOperatingMode(timeOfUpdate);
-        OperatingMode newMode = roomController.getActiveOperatingMode();
-
-        if (oldMode.equals(newMode) == false) {
-            operatingModeChangedListener.operatingModeChanged(roomController.getItemName(), oldMode, newMode);
-        }
+        hvacRoomControllerGroup.updateOperatingMode(timeOfUpdate);
     }
 }
