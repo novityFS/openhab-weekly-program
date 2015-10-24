@@ -4,7 +4,9 @@ import de.novity.openhab.hvac.api.OperatingModeChangedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 public class HVACRoomController {
     private static final Logger logger = LoggerFactory.getLogger(HVACRoomController.class);
@@ -14,7 +16,7 @@ public class HVACRoomController {
     private final String itemName;
     private final TimeProgramCalculator calculator;
 
-    private TimeProgram timeProgram;
+    private Set<TimeProgram> timePrograms;
 
     private OperatingMode activeOperatingMode;
 
@@ -29,55 +31,45 @@ public class HVACRoomController {
 
         this.listener = listener;
         this.itemName = itemName;
-        this.timeProgram = null;
+        this.timePrograms = new HashSet<>();
         this.activeOperatingMode = OperatingMode.Undefined;
         this.calculator = new TimeProgramCalculator();
 
         logger.info("Room controller for item name '{}' created", itemName);
     }
 
-    public void applyTimeProgram(TimeProgram timeProgram) {
+    public void addTimeProgram(TimeProgram timeProgram) {
         if (timeProgram == null) {
             throw new IllegalArgumentException("Time program must not be null");
         }
 
-        this.timeProgram = timeProgram;
-        logger.info("Time program '{}' for item name '{}' applied", timeProgram.getId(), itemName);
+        timePrograms.add(timeProgram);
     }
 
     public String getItemName() {
         return itemName;
     }
 
-    public TimeProgram getTimeProgram() {
-        return timeProgram;
-    }
-
     public OperatingMode getActiveOperatingMode() {
         return activeOperatingMode;
     }
 
-    public void updateOperatingMode(LocalTime timeOfUpdate) {
-        if (timeOfUpdate == null) {
+    public void updateOperatingMode(LocalDateTime dateAndTimeOfUpdate) {
+        if (dateAndTimeOfUpdate == null) {
             throw new NullPointerException("Point in time must not be null");
         }
 
-        if (timeProgram != null) {
-            OperatingMode nextOperatingMode = calculator.determineOperationgModeByTime(
-                    timeOfUpdate,
-                    timeProgram,
-                    activeOperatingMode);
+        OperatingMode nextOperatingMode = calculator.determineOperationModeByDateAndTime(
+                dateAndTimeOfUpdate,
+                timePrograms,
+                activeOperatingMode);
 
-            publishOperatingMode(nextOperatingMode);
-        }
+        publishOperatingMode(activeOperatingMode, nextOperatingMode);
     }
 
-    private void publishOperatingMode(OperatingMode newOperatingMode) {
-        logger.trace("Checking operating mode on item '{}'", itemName);
-        if (!newOperatingMode.equals(activeOperatingMode)) {
-            OperatingMode oldOperatingMode = activeOperatingMode;
+    private void publishOperatingMode(OperatingMode oldOperatingMode, OperatingMode newOperatingMode) {
+        if (newOperatingMode != oldOperatingMode) {
             activeOperatingMode = newOperatingMode;
-
             listener.operatingModeChanged(itemName, oldOperatingMode, newOperatingMode);
         }
     }

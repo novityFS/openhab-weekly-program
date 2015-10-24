@@ -1,70 +1,58 @@
 package de.novity.openhab.hvac.domain;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class TimeProgram {
-    private static final Logger logger = LoggerFactory.getLogger(TimeProgram.class);
+    private final CalendarSchedule calendarSchedule;
+    private final TimeSchedule timeSchedule;
 
-    private final String id;
-    private List<SwitchCycle> cycles;
-
-    public TimeProgram(String id) {
-        if ((id == null) || (id.isEmpty())){
-            throw new IllegalArgumentException("Id must not be null or empty");
+    public TimeProgram(CalendarSchedule calendarSchedule, TimeSchedule timeSchedule) {
+        if (calendarSchedule == null) {
+            throw new NullPointerException("Calendar day must not be null");
         }
 
-        this.id = id;
-        this.cycles = new ArrayList<SwitchCycle>();
-
-        logger.info("Time program '{}' created", id);
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void add(SwitchCycle cycle) {
-        if (cycle == null) {
-            throw new NullPointerException("Switch cycle must not be null");
+        if (timeSchedule == null) {
+            throw new NullPointerException("Time schedule must not be null");
         }
 
-        cycles.add(cycle);
-
-        logger.info("Cycle '{}' added to time program '{}'", cycle, id);
+        this.calendarSchedule = calendarSchedule;
+        this.timeSchedule = timeSchedule;
     }
 
-    public void addAll(List<SwitchCycle> cycles) {
-        if (cycles == null) {
-            throw new NullPointerException("List of switch cycles must not be null");
+    public CalendarSchedule getCalendarSchedule() {
+        return calendarSchedule;
+    }
+
+    public TimeSchedule getTimeSchedule() {
+        return timeSchedule;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
 
-        for (SwitchCycle cycle : cycles) {
-            add(cycle);
+        if (obj == this) {
+            return true;
         }
+
+        if (obj.getClass() != getClass()) {
+            return false;
+        }
+
+        TimeProgram rhs = (TimeProgram) obj;
+
+        return new EqualsBuilder()
+                .append(calendarSchedule, rhs.calendarSchedule)
+                .isEquals();
     }
 
-    public boolean contains(SwitchCycle switchCycle) {
-        return cycles.contains(switchCycle);
-    }
-
-    public List<SwitchCycle> getCycles() {
-        return Collections.unmodifiableList(cycles);
-    }
-
-    public int size() {
-        return cycles.size();
-    }
-
-    public SwitchCycle getEarliestSwitchCycle() {
-        return cycles.get(0);
-    }
-
-    public SwitchCycle getLatestSwitchCycle() {
-        return cycles.get(cycles.size() - 1);
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(19, 23)
+                .append(calendarSchedule)
+                .toHashCode();
     }
 }

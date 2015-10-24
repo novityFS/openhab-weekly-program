@@ -3,25 +3,28 @@ package de.novity.openhab.hvac.domain;
 import de.novity.openhab.hvac.api.OperatingModeChangedListener;
 import de.novity.openhab.hvac.api.RoomControllerRepository;
 import de.novity.openhab.hvac.api.RoomControllerService;
-import de.novity.openhab.hvac.api.TimeProgramRepository;
+import de.novity.openhab.hvac.api.TimeScheduleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.LocalTime;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 public class RoomControllerDefaultService implements RoomControllerService {
     private static final Logger logger = LoggerFactory.getLogger(RoomControllerDefaultService.class);
 
     private final RoomControllerRepository roomControllerRepository;
-    private final TimeProgramRepository timeProgramRepository;
+    private final TimeScheduleRepository timeScheduleRepository;
     private final OperatingModeChangedListener operatingModeChangedListener;
 
-    public RoomControllerDefaultService(RoomControllerRepository roomControllerRepository, TimeProgramRepository timeProgramRepository, OperatingModeChangedListener operatingModeChangedListener) {
+    public RoomControllerDefaultService(RoomControllerRepository roomControllerRepository, TimeScheduleRepository timeScheduleRepository, OperatingModeChangedListener operatingModeChangedListener) {
         if (roomControllerRepository == null) {
             throw new NullPointerException("RoomControllerRepository must not be null");
         }
 
-        if (timeProgramRepository == null) {
+        if (timeScheduleRepository == null) {
             throw new NullPointerException("TimeProgramRepository must not be null");
         }
 
@@ -30,7 +33,7 @@ public class RoomControllerDefaultService implements RoomControllerService {
         }
 
         this.roomControllerRepository = roomControllerRepository;
-        this.timeProgramRepository = timeProgramRepository;
+        this.timeScheduleRepository = timeScheduleRepository;
         this.operatingModeChangedListener = operatingModeChangedListener;
         logger.info("Room controller default service created");
     }
@@ -48,7 +51,7 @@ public class RoomControllerDefaultService implements RoomControllerService {
         logger.info("Room controller for item '{}' added to room controller group {}", itemName, roomControllerGroupName);
     }
 
-    public void applyTimeProgram(String roomControllerGroupName, String itemName, String timeProgramId) {
+    public void addTimeProgram(String roomControllerGroupName, String itemName, String timeScheduleId, String ... dayOfWeeks) {
         HVACRoomControllerGroup hvacRoomControllerGroup = roomControllerRepository.findByName(roomControllerGroupName);
         HVACRoomController roomController = hvacRoomControllerGroup.findByItemName(itemName);
 
@@ -56,23 +59,31 @@ public class RoomControllerDefaultService implements RoomControllerService {
             throw new NullPointerException("Room controller for item '" + itemName + "' is unknown");
         }
 
-        TimeProgram timeProgram = timeProgramRepository.findById(timeProgramId);
+        TimeSchedule timeSchedule = timeScheduleRepository.findById(timeScheduleId);
 
-        if (timeProgram == null) {
-            throw new NullPointerException("Time program for id '" + timeProgramId + "' is unknown");
+        if (timeSchedule == null) {
+            throw new NullPointerException("Time schedule for id '" + timeScheduleId + "' is unknown");
         }
 
-        roomController.applyTimeProgram(timeProgram);
-        logger.info("Time program '{}' applied to item '{}'", timeProgramId, itemName);
+        Set<DayOfWeek> validDaysOfWeek = new HashSet<>();
+
+        for (String dayOfWeek : dayOfWeeks) {
+            validDaysOfWeek.add(DayOfWeek.valueOf(dayOfWeek));
+        }
+
+        CalendarWeekSchedule calendarDayOfWeek = new CalendarWeekSchedule(validDaysOfWeek);
+        TimeProgram timeProgram = new TimeProgram(calendarDayOfWeek, timeSchedule);
+        roomController.addTimeProgram(timeProgram);
+        logger.info("Time schedule '{}' applied to item '{}'", timeScheduleId, itemName);
     }
 
-    public void updateOperatingMode(String roomControllerGroupName, LocalTime timeOfUpdate) {
+    public void updateOperatingMode(String roomControllerGroupName, LocalDateTime dateAndTimeOfUpdate) {
         HVACRoomControllerGroup hvacRoomControllerGroup = roomControllerRepository.findByName(roomControllerGroupName);
 
         if (hvacRoomControllerGroup == null) {
             throw new NullPointerException("Room controller for id '" + roomControllerGroupName + "' is unknown");
         }
 
-        hvacRoomControllerGroup.updateOperatingMode(timeOfUpdate);
+        hvacRoomControllerGroup.updateOperatingMode(dateAndTimeOfUpdate);
     }
 }

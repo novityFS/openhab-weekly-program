@@ -1,8 +1,8 @@
 package de.novity.openhab.hvac.domain;
 
 import de.novity.openhab.hvac.api.SwitchCycleData;
-import de.novity.openhab.hvac.api.TimeProgramRepository;
 import de.novity.openhab.hvac.api.TimeProgramService;
+import de.novity.openhab.hvac.api.TimeScheduleRepository;
 import de.novity.openhab.hvac.application.SwitchCycleMapper;
 import mockit.Mocked;
 import mockit.StrictExpectations;
@@ -13,9 +13,9 @@ import java.time.LocalTime;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public class TimeProgramDefaultServiceTest {
+public class TimeScheduleDefaultServiceTest {
     @Mocked
-    TimeProgramRepository repository;
+    TimeScheduleRepository repository;
 
     @Test(
             expectedExceptions = NullPointerException.class
@@ -30,7 +30,7 @@ public class TimeProgramDefaultServiceTest {
     public void whenATimeProgramIsDefinedWithoutIdentifierThenAnExceptionIsThrown() {
         TimeProgramService service = new TimeProgramDefaultService(repository);
 
-        service.defineTimeProgram(null);
+        service.defineTimeSchedule(null);
     }
 
     @Test
@@ -38,23 +38,23 @@ public class TimeProgramDefaultServiceTest {
         TimeProgramService service = new TimeProgramDefaultService(repository);
 
         new StrictExpectations() {{
-                repository.addTimeProgram((TimeProgram) any);
+                repository.addTimeSchedule((TimeSchedule) any);
             }
         };
 
-        service.defineTimeProgram("My first program");
+        service.defineTimeSchedule("My first program");
     }
 
     @Test
     public void whenASwitchCycleIsAddedToATimeProgramThenTheTimeProgramHasThatSwitchCycle() {
         TimeProgramService service = new TimeProgramDefaultService(repository);
         final String id = "My first program";
-        final TimeProgram timeProgram = new TimeProgram(id);
+        final TimeSchedule timeSchedule = new TimeSchedule(id);
 
-        service.defineTimeProgram(id);
+        service.defineTimeSchedule(id);
 
         new StrictExpectations() {{
-                repository.findById(id); result = timeProgram;
+                repository.findById(id); result = timeSchedule;
             }
         };
 
@@ -65,6 +65,6 @@ public class TimeProgramDefaultServiceTest {
         final SwitchCycle switchCycle = SwitchCycleMapper.mapFromData(switchCycleData);
 
         service.addSwitchCycle(id, switchCycleData);
-        assertThat(timeProgram.contains(switchCycle), is(true));
+        assertThat(timeSchedule.contains(switchCycle), is(true));
     }
 }

@@ -5,7 +5,10 @@ import mockit.Mocked;
 import mockit.StrictExpectations;
 import org.testng.annotations.Test;
 
-import java.time.LocalTime;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
@@ -33,16 +36,22 @@ public class HVACRoomControllerTest {
     public void whenRoomControllerIsCreatedWithMissingTimeProgramAndOperatingModeIsUpdatedThenTheOperatingModeIsStillUndefined() {
         final String itemName = "Item";
         HVACRoomController roomController = new HVACRoomController(itemName, listener);
-        roomController.updateOperatingMode(LocalTime.parse("07:00"));
+        roomController.updateOperatingMode(LocalDateTime.parse("2015-01-05T07:00"));
 
         assertThat(roomController.getActiveOperatingMode(), equalTo(OperatingMode.Undefined));
     }
 
     @Test
     public void whenRoomControllerIsCreatedAndOperatingModeIsUpdatedThenTheOperatingModeChangedListenerIsNotified() {
-        final TimeProgramBuilder builder = new TimeProgramBuilder();
+        final TimeScheduleBuilder builder = new TimeScheduleBuilder();
         final String itemName = "Item";
-        final TimeProgram timeProgram = builder.defaultProgram();
+        final TimeSchedule timeSchedule = builder.defaultSchedule();
+
+        final Set<DayOfWeek> validDaysOfWeek = new HashSet<>();
+        validDaysOfWeek.add(DayOfWeek.MONDAY);
+        final CalendarSchedule calendarWeekSchedule = new CalendarWeekSchedule(validDaysOfWeek);
+
+        final TimeProgram timeProgram = new TimeProgram(calendarWeekSchedule, timeSchedule);
 
         new StrictExpectations() {
             {
@@ -51,19 +60,25 @@ public class HVACRoomControllerTest {
         };
 
         HVACRoomController roomController = new HVACRoomController(itemName, listener);
-        roomController.applyTimeProgram(timeProgram);
-        roomController.updateOperatingMode(LocalTime.parse("07:00"));
+        roomController.addTimeProgram(timeProgram);
+        roomController.updateOperatingMode(LocalDateTime.parse("2015-01-05T07:00"));
     }
 
     @Test
     public void whenRoomControllerIsCreatedAndOperatingModeIsUpdatedThenTheOperatingModeIsNotUndefinedAnymore() {
-        final TimeProgramBuilder builder = new TimeProgramBuilder();
+        final TimeScheduleBuilder builder = new TimeScheduleBuilder();
         final String itemName = "Item";
-        final TimeProgram timeProgram = builder.defaultProgram();
+        final TimeSchedule timeSchedule = builder.defaultSchedule();
+
+        final Set<DayOfWeek> validDaysOfWeek = new HashSet<>();
+        validDaysOfWeek.add(DayOfWeek.MONDAY);
+        final CalendarSchedule calendarWeekSchedule = new CalendarWeekSchedule(validDaysOfWeek);
+
+        final TimeProgram timeProgram = new TimeProgram(calendarWeekSchedule, timeSchedule);
 
         HVACRoomController roomController = new HVACRoomController(itemName, listener);
-        roomController.applyTimeProgram(timeProgram);
-        roomController.updateOperatingMode(LocalTime.parse("07:00"));
+        roomController.addTimeProgram(timeProgram);
+        roomController.updateOperatingMode(LocalDateTime.parse("2015-01-05T07:00"));
 
         assertThat(roomController.getActiveOperatingMode(), not(equalTo(OperatingMode.Undefined)));
     }

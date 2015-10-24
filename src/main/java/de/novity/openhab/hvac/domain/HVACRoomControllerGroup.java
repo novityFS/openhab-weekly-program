@@ -1,6 +1,6 @@
 package de.novity.openhab.hvac.domain;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,9 +41,9 @@ public class HVACRoomControllerGroup {
         return hvacController.get(itemName);
     }
 
-    public void updateOperatingMode(LocalTime timeOfUpdate) {
+    public void updateOperatingMode(LocalDateTime dateAndTimeOfUpdate) {
         for (HVACRoomController roomController : hvacController.values()) {
-            roomController.updateOperatingMode(timeOfUpdate);
+            roomController.updateOperatingMode(dateAndTimeOfUpdate);
         }
     }
 }
